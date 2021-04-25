@@ -1,4 +1,9 @@
 import PySimpleGUI as sg
+import csv
+import os
+import re
+import xml.etree.ElementTree as ET
+
 
 WINDOW_SIZE = (1000, 700)
 BUTTON_SIZE = (15, 1)
@@ -11,12 +16,59 @@ Checkbox_Size = (15, 1)
 Proc_Info_Size = (60, 1)
 Us = 60
 val = 0
+policy_dict = {}
+path = r"C:/Program Files/Cisco/AMP"
 sg.theme('SystemDefault')
+
+
+def get_version():
+    with open(f"{path}/installed_services.csv") as csvfile:
+        csv_file = csv.reader(csvfile)
+        for row in csv_file:
+            if "Cisco AMP for Endpoints Connector" in row[0]:
+                version = row[0].split(' ')[5]
+                return version
+
+
+def dig_thru_xml(*args, root, tag="{http://www.w3.org/2000/09/xmldsig#}", is_list=False):
+    for arg in args[:-1]:
+        query = "{}{}".format(tag, arg)
+        root = root.findall(query)
+        if root:
+            root = root[0]
+        else:
+            return None
+    root = root.findall("{}{}".format(tag, args[-1]))
+    if root:
+        if is_list:
+            return [i.text for i in root]
+        else:
+            return root[0].text
+    return None
+
+
+def read_xmls(version):
+    try:
+        with open(f"{path}/policy.xml") as f:
+            tree = ET.parse(f)
+            root = tree.getroot()
+
+        #policy_dict['policy_sn'] = dig_thru_xml("Object", "config", "janus", "policy", "serial_number", root)
+
+        with open(f"{path}/{version}/global.xml") as infile:
+            for line in infile:
+                if "<revision>" in line:
+                    build = re.split('>|<', line)[2]
+        window["_SCAN_VERSION"].update(version)
+        window["_VERS_BUILD"].update(f"{version}.{build}")
+    except Exception as e:
+        exit(e)
+
 
 left_col = [
     [sg.Frame(layout=[
-        [sg.Button("Start", size=BUTTON_SIZE, button_color=BUTTON_COLOR),
-         sg.Button("Stop", size=BUTTON_SIZE, button_color=BUTTON_COLOR, disabled=True)],
+        [sg.Button("Start", size=BUTTON_SIZE, button_color=BUTTON_COLOR, key="_START"),
+         sg.Button("Stop", size=BUTTON_SIZE, button_color=BUTTON_COLOR, disabled=True, key="_STOP")],
         [sg.Text("")],
         [sg.Text("Engines Enabled")],
         [sg.Checkbox("File Scan", size=Checkbox_Size), sg.Checkbox("Network Scan")],
@@ -72,12 +124,15 @@ layout = [
 ]
 
 window = sg.Window("Cisco Secure Endpoint Resource Monitor 1.0.0 - Cisco Systems, Inc",
-                   layout, size=WINDOW_SIZE, icon="images/cisco.ico")
+                   layout, size=WINDOW_SIZE, icon="images/cisco.ico", resizable=True)
 while True:
     event, values = window.read()
-    print(event, values)
+    #print(event, values)
     if event in (sg.WIN_CLOSED, "Exit"):
         break
+    elif event == "_START":
+        version = get_version()
+        read_xmls(version)
     #remove this data holder before finalizing
     else:
         val += 10
