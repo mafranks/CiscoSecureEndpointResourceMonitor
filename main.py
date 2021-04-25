@@ -132,7 +132,7 @@ left_col = [
         [sg.Frame(layout=[
             [sg.Text("RAM", size=DRC_Size), sg.ProgressBar(BAR_MAX, orientation="h", size=BAR_SIZE, key="_RAM")],
             [sg.Text("CPU", size=DRC_Size), sg.ProgressBar(BAR_MAX, orientation="h", size=BAR_SIZE, key="_CPU")],
-            [sg.Text("DISK", size=DRC_Size), sg.Text("0 MB", size=(15, 1), key="_DISK")]
+            [sg.Text("DISK", size=DRC_Size), sg.Text("0 MB", size=(20, 1), key="_DISK")]
         ], title="Secure Endpoint Total Resources Used")],
     ], title="Resource Usage Test")]]
 
@@ -222,26 +222,35 @@ def main(window):
                 processors = psutil.cpu_count()
                 for proc in processes:
                     if proc.name() == "sfc.exe":
-                        sfc_cpu = proc.cpu_percent()/processors
-                        if sfc_cpu > sfc_max_cpu:
-                            sfc_max_cpu = sfc_cpu
-                        sfc_ram = proc.memory_percent()/processors
-                        if sfc_ram > sfc_max_ram:
-                            sfc_max_ram = sfc_ram
+                        try:
+                            sfc_cpu = proc.cpu_percent()/processors
+                            if sfc_cpu > sfc_max_cpu:
+                                sfc_max_cpu = sfc_cpu
+                            sfc_ram = proc.memory_percent()/processors
+                            if sfc_ram > sfc_max_ram:
+                                sfc_max_ram = sfc_ram
+                        except ProcessLookupError as e:
+                            print(e)
                     elif proc.name() == "cscm.exe":
-                        cscm_cpu = proc.cpu_percent()/processors
-                        if cscm_cpu > cscm_max_cpu:
-                            cscm_max_cpu = cscm_cpu
-                        cscm_ram = proc.memory_percent()/processors
-                        if cscm_ram > cscm_max_ram:
-                            cscm_max_ram = cscm_ram
+                        try:
+                            cscm_cpu = proc.cpu_percent()/processors
+                            if cscm_cpu > cscm_max_cpu:
+                                cscm_max_cpu = cscm_cpu
+                            cscm_ram = proc.memory_percent()/processors
+                            if cscm_ram > cscm_max_ram:
+                                cscm_max_ram = cscm_ram
+                        except ProcessLookupError as e:
+                            print(e)
                     elif proc.name() == "orbital.exe":
-                        orbital_cpu = proc.cpu_percent()/processors
-                        if orbital_cpu > orbital_max_cpu:
-                            orbital_max_cpu = orbital_cpu
-                        orbital_ram = proc.memory_percent()/processors
-                        if orbital_ram > orbital_max_ram:
-                            orbital_max_ram = orbital_ram
+                        try:
+                            orbital_cpu = proc.cpu_percent()/processors
+                            if orbital_cpu > orbital_max_cpu:
+                                orbital_max_cpu = orbital_cpu
+                            orbital_ram = proc.memory_percent()/processors
+                            if orbital_ram > orbital_max_ram:
+                                orbital_max_ram = orbital_ram
+                        except ProcessLookupError as e:
+                            print(e)
                 total_ram = sfc_ram + cscm_ram + orbital_ram
                 total_cpu = sfc_cpu + sfc_ram + orbital_ram
                 try:
