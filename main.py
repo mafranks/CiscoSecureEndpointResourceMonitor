@@ -190,7 +190,7 @@ def main(window):
     sfc_max_cpu, sfc_cpu, sfc_max_ram, sfc_ram, \
         cscm_max_cpu, cscm_cpu, cscm_max_ram, cscm_ram, \
         orbital_max_cpu, orbital_cpu, orbital_max_ram, orbital_ram, \
-        total_ram, total_cpu = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        total_ram, total_cpu, started = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     event, values = window.read()
 
     if event in (sg.WIN_CLOSED, "Exit"):
@@ -201,8 +201,9 @@ def main(window):
     if event == "_START":
         window['_START'].update(disabled=True)
         window['_STOP'].update(disabled=False)
+        started = 1
         while True:
-            event, values = window.read(timeout=1000)
+            event, values = window.read(timeout=300)
             if event in (sg.WIN_CLOSED, "Exit"):
                 window.close()
                 del window
@@ -210,14 +211,14 @@ def main(window):
             if event == "_STOP":
                 window['_START'].update(disabled=False)
                 window['_STOP'].update(disabled=True)
+                started = 0
                 window.read(timeout=10)
             if event == "_START":
                 window['_START'].update(disabled=True)
                 window['_STOP'].update(disabled=False)
+                started = 1
                 window.read(timeout=10)
-            print(window['_START'].Disabled)
-            print(window['_STOP'].Disabled)
-            if window["_START"].Disabled:
+            if started == 1:
                 processes = [proc for proc in psutil.process_iter()]
                 for proc in processes:
                     if proc.name() == "sfc.exe":
