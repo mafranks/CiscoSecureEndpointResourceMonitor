@@ -1,7 +1,6 @@
 import PySimpleGUI as sg
 import csv
 import psutil
-import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -220,35 +219,38 @@ def main(window):
                 window.read(timeout=10)
             if started == 1:
                 processes = [proc for proc in psutil.process_iter()]
+                processors = psutil.cpu_count()
                 for proc in processes:
                     if proc.name() == "sfc.exe":
-                        sfc_cpu = proc.cpu_percent()
+                        sfc_cpu = proc.cpu_percent()/processors
                         if sfc_cpu > sfc_max_cpu:
                             sfc_max_cpu = sfc_cpu
-                        sfc_ram = proc.memory_percent()
+                        sfc_ram = proc.memory_percent()/processors
                         if sfc_ram > sfc_max_ram:
                             sfc_max_ram = sfc_ram
                     elif proc.name() == "cscm.exe":
-                        cscm_cpu = proc.cpu_percent()
+                        cscm_cpu = proc.cpu_percent()/processors
                         if cscm_cpu > cscm_max_cpu:
                             cscm_max_cpu = cscm_cpu
-                        cscm_ram = proc.memory_percent()
+                        cscm_ram = proc.memory_percent()/processors
                         if cscm_ram > cscm_max_ram:
                             cscm_max_ram = cscm_ram
                     elif proc.name() == "orbital.exe":
-                        orbital_cpu = proc.cpu_percent()
+                        orbital_cpu = proc.cpu_percent()/processors
                         if orbital_cpu > orbital_max_cpu:
                             orbital_max_cpu = orbital_cpu
-                        orbital_ram = proc.memory_percent()
+                        orbital_ram = proc.memory_percent()/processors
                         if orbital_ram > orbital_max_ram:
                             orbital_max_ram = orbital_ram
-                print('yes5')
                 total_ram = sfc_ram + cscm_ram + orbital_ram
                 total_cpu = sfc_cpu + sfc_ram + orbital_ram
-                amp_disk_usage = sum(f.stat().st_size for f in amp_root_directory.glob('**/*') if f.is_file())
-                orbital_disk_usage = sum(f.stat().st_size for f in orbital_root_directory.glob('**/*') if f.is_file())
-                disk_usage = f"{(amp_disk_usage + orbital_disk_usage) / (2**20):.3f} MB"
-
+                try:
+                    amp_disk_usage = sum(f.stat().st_size for f in amp_root_directory.glob('**/*') if f.is_file())
+                    orbital_disk_usage = sum(f.stat().st_size for f in orbital_root_directory.glob('**/*') if f.is_file())
+                    disk_usage = f"{(amp_disk_usage + orbital_disk_usage) / (2**20):.3f} MB"
+                except PermissionError as e:
+                    print(e)
+                    disk_usage = "Permission Error.  Run as Admin."
                 window['_SFC_RAM'].update(f"{sfc_ram:.4f} %")
                 window['_SFC_CPU'].update(f"{sfc_cpu:.4f} %")
                 window['_SFC_MAX_CPU'].update(f"{sfc_max_cpu:.4f} %")
