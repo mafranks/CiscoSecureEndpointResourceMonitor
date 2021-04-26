@@ -132,7 +132,7 @@ left_col = [
         [sg.Frame(layout=[
             [sg.Text("RAM", size=DRC_Size), sg.ProgressBar(BAR_MAX, orientation="h", size=BAR_SIZE, key="_RAM")],
             [sg.Text("CPU", size=DRC_Size), sg.ProgressBar(BAR_MAX, orientation="h", size=BAR_SIZE, key="_CPU")],
-            [sg.Text("DISK", size=DRC_Size), sg.Text("0 MB", size=(20, 1), key="_DISK")]
+            [sg.Text("DISK", size=DRC_Size), sg.Text("0 MB", size=(30, 1), key="_DISK")]
         ], title="Secure Endpoint Total Resources Used")],
     ], title="Resource Usage Test")]]
 
@@ -161,7 +161,7 @@ layout = [
              relief=sg.RELIEF_RIDGE, size=(51, 1), background_color="light blue", font=("Helvetica", 25))],
     [sg.Text("")],
     [sg.Text("Press Start to Begin", size=(88, 1), justification="center", font=("Helvetica", 15),
-             border_width=1, relief=sg.RELIEF_RIDGE, background_color="white", text_color="black")],
+             border_width=1, relief=sg.RELIEF_RIDGE, background_color="white", text_color="black", key="_RUN_TEXT")],
     [sg.HSeparator()],
     [sg.Text("")],
     [sg.Column(left_col, element_justification='c'), sg.Column(right_col, element_justification='c')],
@@ -201,6 +201,7 @@ def main(window):
         window['_START'].update(disabled=True)
         window['_STOP'].update(disabled=False)
         started = 1
+        window['_RUN_TEXT'].update("Running")
         while True:
             event, values = window.read(timeout=300)
             if event in (sg.WIN_CLOSED, "Exit"):
@@ -211,11 +212,13 @@ def main(window):
                 window['_START'].update(disabled=False)
                 window['_STOP'].update(disabled=True)
                 started = 0
+                window['_RUN_TEXT'].update("Press Start to Continue")
                 window.read(timeout=10)
             if event == "_START":
                 window['_START'].update(disabled=True)
                 window['_STOP'].update(disabled=False)
                 started = 1
+                window['_RUN_TEXT'].update("Running")
                 window.read(timeout=10)
             if started == 1:
                 processes = [proc for proc in psutil.process_iter()]
@@ -229,7 +232,7 @@ def main(window):
                             sfc_ram = proc.memory_percent()/processors
                             if sfc_ram > sfc_max_ram:
                                 sfc_max_ram = sfc_ram
-                        except ProcessLookupError as e:
+                        except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
                             print(e)
                     elif proc.name() == "cscm.exe":
                         try:
@@ -239,7 +242,7 @@ def main(window):
                             cscm_ram = proc.memory_percent()/processors
                             if cscm_ram > cscm_max_ram:
                                 cscm_max_ram = cscm_ram
-                        except ProcessLookupError as e:
+                        except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
                             print(e)
                     elif proc.name() == "orbital.exe":
                         try:
@@ -249,17 +252,17 @@ def main(window):
                             orbital_ram = proc.memory_percent()/processors
                             if orbital_ram > orbital_max_ram:
                                 orbital_max_ram = orbital_ram
-                        except ProcessLookupError as e:
+                        except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
                             print(e)
                 total_ram = sfc_ram + cscm_ram + orbital_ram
                 total_cpu = sfc_cpu + sfc_ram + orbital_ram
+                disk_usage = "0 MB"
                 try:
                     amp_disk_usage = sum(f.stat().st_size for f in amp_root_directory.glob('**/*') if f.is_file())
                     orbital_disk_usage = sum(f.stat().st_size for f in orbital_root_directory.glob('**/*') if f.is_file())
                     disk_usage = f"{(amp_disk_usage + orbital_disk_usage) / (2**20):.3f} MB"
-                except PermissionError as e:
+                except (PermissionError, FileNotFoundError) as e:
                     print(e)
-                    disk_usage = "Permission Error.  Run as Admin."
                 window['_SFC_RAM'].update(f"{sfc_ram:.4f} %")
                 window['_SFC_CPU'].update(f"{sfc_cpu:.4f} %")
                 window['_SFC_MAX_CPU'].update(f"{sfc_max_cpu:.4f} %")
