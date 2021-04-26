@@ -1,8 +1,18 @@
 import PySimpleGUI as sg
-import csv
+import os
 import psutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
+import logging
+import re
+
+logging.basicConfig(
+    format='%(asctime)s %(name)-12s %(levelname)-8s %(filename)s %(funcName)s %(message)s',
+    datefmt='%m-%d %H:%M:%S',
+    level=logging.INFO,
+    filename="amp_resource_monitor.log"
+)
+logging.info(f"AMP Resource Montior is {logging.getLevelName(logging.getLogger().level)}")
 
 WINDOW_SIZE = (1000, 760)
 BUTTON_SIZE = (15, 1)
@@ -22,15 +32,28 @@ orbital_root_directory = Path(r'C:/Program Files/Cisco/Orbital')
 
 
 def get_version():
-    with open(f"{path}/installed_services.csv") as csvfile:
-        csv_file = csv.reader(csvfile)
-        for row in csv_file:
-            if "Cisco AMP for Endpoints Connector" in row[0]:
-                version = row[0].split(' ')[5]
-                return version
+    """
+    Pull the AMP version from the installed_services.csv file
+    """
+    logging.info("Starting get_version")
+    directory = os.listdir(path)
+    max_version = [0, 0, 0]
+    reg_version = r'\d{1,2}\.\d{1,2}\.\d{1,2}'
+    for entry in directory:
+        reg = re.findall(reg_version, entry)
+        if reg:
+            if [int(x) for x in reg[0].split(".")] > max_version:
+                max_version = list(map(lambda x: int(x), reg[0].split(".")))
+                print(".".join([str(x) for x in max_version]))
+    logging.info(f"Version found: {max_version}")
+    return ".".join([str(x) for x in max_version])
 
 
 def dig_thru_xml(*args, root, tag="{http://www.w3.org/2000/09/xmldsig#}", is_list=False):
+    """
+    Look through an XML file for a specific entry
+    """
+    logging.info("Digging through XML")
     for arg in args[:-1]:
         query = "{}{}".format(tag, arg)
         root = root.findall(query)
@@ -41,16 +64,22 @@ def dig_thru_xml(*args, root, tag="{http://www.w3.org/2000/09/xmldsig#}", is_lis
     root = root.findall("{}{}".format(tag, args[-1]))
     if root:
         if is_list:
+            logging.info("Returning list from XML")
             return [i.text for i in root]
         else:
+            logging.info("Returning entry from XML")
             return root[0].text
     return None
 
 
 def read_xmls(version, window):
+    """
+    Define information from local, global and policy XMLs
+    """
     try:
-        # Parse policy.xml
+        logging.info("Starting to process XMLs")
         with open(f"{path}/policy.xml") as infile:
+            logging.info("Policy.xml is open")
             tree = ET.parse(infile)
             root = tree.getroot()
 
@@ -69,21 +98,26 @@ def read_xmls(version, window):
             orbital_6_5_1_to_7_1_1 = dig_thru_xml("Object", "config", "orbital", "enable", root=root)
             orbital_7_1_1_to_7_1_5 = dig_thru_xml("Object", "config", "orbital", "enable_msi", root=root)
             orbital_7_1_5_plus = dig_thru_xml("Object", "config", "orbital", "enablemsi", root=root)
+            orbital = 0
             if "1" in (orbital_6_5_1_to_7_1_1, orbital_7_1_1_to_7_1_5, orbital_7_1_5_plus):
-                orbital = "1"
+                orbital = 1
+            logging.info("Closing policy.xml")
 
-        # Parse global.xml
         with open(f"{path}/{version}/global.xml") as infile:
+            logging.info("Global.xml is open")
             tree = ET.parse(infile)
             root = tree.getroot()
             build = dig_thru_xml("Object", "config", "agent", "revision", root=root)
+            logging.info("Closing global.xml")
 
-        # Parse local.xml
         with open(f"{path}/local.xml") as infile:
+            logging.info("Local.xml is open")
             tree = ET.parse(infile)
             root = tree.getroot()
             tetra_version = dig_thru_xml("agent", "engine", "tetra", "defversions", root=root, tag="").split(':')[1]
+            logging.info("Closing local.xml")
 
+        logging.info("Updating window elements with values from XMLs")
         if exprev_options in ("0x0000012B", "0x0000033B"):
             window["_SCRIPT_CONTROL"].update(True)
         window["_FILE_SCAN"].update(True)
@@ -105,12 +139,14 @@ def read_xmls(version, window):
         window["_POLICY_UUID"].update(policy_uuid)
         window["_POLICY_SERIAL"].update(policy_serial)
         window["_TETRA_VERSION"].update(tetra_version)
+        logging.info("Window elements updated successfully")
         return window
 
     except Exception as e:
+        logging.info(f"Exception hit:{e}")
         exit(e)
 
-
+logging.info("Establishing window columns' layout")
 left_col = [
     [sg.Frame(layout=[
         [sg.Text("")],
@@ -174,18 +210,20 @@ layout = [
         [sg.Text("Policy Serial", size=Checkbox_Size), sg.Text("_" * Us, key="_POLICY_SERIAL")],
         [sg.Text("TETRA Version", size=Checkbox_Size), sg.Text("_" * Us, key="_TETRA_VERSION")]
     ], title="Secure Endpoint Details")]
-
 ]
+logging.info("Window columns established")
 
 window = sg.Window("Cisco Secure Endpoint Resource Monitor 1.0.0 - Cisco Systems, Inc",
                    layout, size=WINDOW_SIZE, icon="images/cisco.ico", resizable=True)
 window.read(timeout=100)
+logging.info("Window object created")
 
 version = get_version()
 window = read_xmls(version, window)
 
 
 def main(window):
+    logging.info("Starting main function")
     sfc_max_cpu, sfc_cpu, sfc_max_ram, sfc_ram, \
         cscm_max_cpu, cscm_cpu, cscm_max_ram, cscm_ram, \
         orbital_max_cpu, orbital_cpu, orbital_max_ram, orbital_ram, \
@@ -193,11 +231,13 @@ def main(window):
     event, values = window.read()
 
     if event in (sg.WIN_CLOSED, "Exit"):
+        logging.info("Window Close event received")
         window.close()
         del window
         exit()
 
     if event == "_START":
+        logging.info("Start event received")
         window['_START'].update(disabled=True)
         window['_STOP'].update(disabled=False)
         started = 1
@@ -205,24 +245,30 @@ def main(window):
         while True:
             event, values = window.read(timeout=300)
             if event in (sg.WIN_CLOSED, "Exit"):
+                logging.info("Window Close event received")
                 window.close()
                 del window
                 exit()
             if event == "_STOP":
+                logging.info("Stop event received")
                 window['_START'].update(disabled=False)
                 window['_STOP'].update(disabled=True)
                 started = 0
                 window['_RUN_TEXT'].update("Press Start to Continue")
                 window.read(timeout=10)
             if event == "_START":
+                logging.info("Start event received")
                 window['_START'].update(disabled=True)
                 window['_STOP'].update(disabled=False)
                 started = 1
                 window['_RUN_TEXT'].update("Running")
                 window.read(timeout=10)
             if started == 1:
+                logging.info("Gathering processes information")
                 processes = [proc for proc in psutil.process_iter()]
+                logging.info("Gathering processors information")
                 processors = psutil.cpu_count()
+                logging.info("Pull sfc, cscm and orbital information from processes")
                 for proc in processes:
                     if proc.name() == "sfc.exe":
                         try:
@@ -233,6 +279,7 @@ def main(window):
                             if sfc_ram > sfc_max_ram:
                                 sfc_max_ram = sfc_ram
                         except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
+                            logging.info(f"Exception hit:{e}")
                             print(e)
                     elif proc.name() == "cscm.exe":
                         try:
@@ -243,6 +290,7 @@ def main(window):
                             if cscm_ram > cscm_max_ram:
                                 cscm_max_ram = cscm_ram
                         except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
+                            logging.info(f"Exception hit:{e}")
                             print(e)
                     elif proc.name() == "orbital.exe":
                         try:
@@ -253,16 +301,21 @@ def main(window):
                             if orbital_ram > orbital_max_ram:
                                 orbital_max_ram = orbital_ram
                         except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
+                            logging.info(f"Exception hit:{e}")
                             print(e)
+                logging.info("Calculating total RAM and total CPU usage")
                 total_ram = sfc_ram + cscm_ram + orbital_ram
                 total_cpu = sfc_cpu + sfc_ram + orbital_ram
                 disk_usage = "0 MB"
                 try:
+                    logging.info("Calculating AMP disk usage")
                     amp_disk_usage = sum(f.stat().st_size for f in amp_root_directory.glob('**/*') if f.is_file())
                     orbital_disk_usage = sum(f.stat().st_size for f in orbital_root_directory.glob('**/*') if f.is_file())
                     disk_usage = f"{(amp_disk_usage + orbital_disk_usage) / (2**20):.3f} MB"
                 except (PermissionError, FileNotFoundError) as e:
+                    logging.info(f"Exception hit:{e}")
                     print(e)
+                logging.info("Updating window information with RAM and CPU information")
                 window['_SFC_RAM'].update(f"{sfc_ram:.4f} %")
                 window['_SFC_CPU'].update(f"{sfc_cpu:.4f} %")
                 window['_SFC_MAX_CPU'].update(f"{sfc_max_cpu:.4f} %")
