@@ -1,10 +1,15 @@
-import PySimpleGUI as sg
 import os
-import psutil
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import logging
 import re
+try:
+    import psutil
+    import PySimpleGUI as sg
+except ModuleNotFoundError as e:
+    logging.info(f"Module not found. {e}")
+    print(f"Module not found. {e}")
+
 
 logging.basicConfig(
     format='%(asctime)s %(name)-12s %(levelname)-8s %(filename)s %(funcName)s %(message)s',
