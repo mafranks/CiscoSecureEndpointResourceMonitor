@@ -1,0 +1,5 @@
+amp_resource_monitor.log
+build
+build/*
+dist
+dist/*
