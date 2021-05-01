@@ -32,7 +32,6 @@ Checkbox_Size = (17, 1)
 Proc_Info_Size = (10, 1)
 Path_Size = (50, 1)
 Details_Size = (92, 1)
-Us = 20
 path = r"C:/Program Files/Cisco/AMP"
 sg.theme('SystemDefault')
 max_disk = psutil.disk_usage("C:/").total // (2 ** 30)
@@ -53,7 +52,6 @@ def get_version():
         if reg:
             if [int(x) for x in reg[0].split(".")] > max_version:
                 max_version = list(map(lambda x: int(x), reg[0].split(".")))
-                print(".".join([str(x) for x in max_version]))
     logging.info(f"Version found: {max_version}")
     return ".".join([str(x) for x in max_version])
 
@@ -198,35 +196,35 @@ left_col = [
 
 right_col = [
     [sg.Frame(layout=[
-        [sg.Text("Process", size=Info_Txt_Size), sg.Text("_" * Us, key="_SFC_PATH", size=Path_Size)],
+        [sg.Text("Process", size=Info_Txt_Size), sg.Text("", key="_SFC_PATH", size=Path_Size)],
         [sg.Text("MEM Usage", size=Info_Txt_Size),
-         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_MEM", size=Proc_Info_Size)],
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("", key="_SFC_MEM", size=Proc_Info_Size)],
         [sg.Text("MEM Usage Max", size=Info_Txt_Size),
-         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_MAX_MEM", size=Proc_Info_Size)],
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("", key="_SFC_MAX_MEM", size=Proc_Info_Size)],
         [sg.Text("CPU Usage", size=Info_Txt_Size),
-         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_CPU", size=Proc_Info_Size)],
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("", key="_SFC_CPU", size=Proc_Info_Size)],
         [sg.Text("CPU Usage Max", size=Info_Txt_Size),
-         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_MAX_CPU", size=Proc_Info_Size)],
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("", key="_SFC_MAX_CPU", size=Proc_Info_Size)],
         [sg.Text("")],
-        [sg.Text("Process", size=Info_Txt_Size), sg.Text("_" * Us, key="_CSCM_PATH", size=Path_Size)],
+        [sg.Text("Process", size=Info_Txt_Size), sg.Text("", key="_CSCM_PATH", size=Path_Size)],
         [sg.Text("MEM Usage", size=Info_Txt_Size),
-         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_MEM", size=Proc_Info_Size)],
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("", key="_CSCM_MEM", size=Proc_Info_Size)],
         [sg.Text("MEM Usage Max", size=Info_Txt_Size),
-         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_MAX_MEM", size=Proc_Info_Size)],
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("", key="_CSCM_MAX_MEM", size=Proc_Info_Size)],
         [sg.Text("CPU Usage", size=Info_Txt_Size),
-         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_CPU", size=Proc_Info_Size)],
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("", key="_CSCM_CPU", size=Proc_Info_Size)],
         [sg.Text("CPU Usage Max", size=Info_Txt_Size),
-         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_MAX_CPU", size=Proc_Info_Size)],
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("", key="_CSCM_MAX_CPU", size=Proc_Info_Size)],
         [sg.Text("")],
-        [sg.Text("Process", size=Info_Txt_Size), sg.Text("_" * Us, key="_ORBITAL_PATH", size=Path_Size)],
+        [sg.Text("Process", size=Info_Txt_Size), sg.Text("", key="_ORBITAL_PATH", size=Path_Size)],
         [sg.Text("MEM Usage", size=Info_Txt_Size),
-         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_MEM", size=Proc_Info_Size)],
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("", key="_ORBITAL_MEM", size=Proc_Info_Size)],
         [sg.Text("MEM Usage Max", size=Info_Txt_Size),
-         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_MAX_MEM", size=Proc_Info_Size)],
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("", key="_ORBITAL_MAX_MEM", size=Proc_Info_Size)],
         [sg.Text("CPU Usage", size=Info_Txt_Size),
-         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_CPU", size=Proc_Info_Size)],
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("", key="_ORBITAL_CPU", size=Proc_Info_Size)],
         [sg.Text("CPU Usage Max", size=Info_Txt_Size),
-         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_MAX_CPU", size=Proc_Info_Size)],
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("", key="_ORBITAL_MAX_CPU", size=Proc_Info_Size)],
     ], title="Processes")],
 ]
 
@@ -240,11 +238,11 @@ layout = [
     [sg.HSeparator()],
     [sg.Text("")],
     [sg.Frame(layout=[
-        [sg.Text("Version & Build", size=Checkbox_Size), sg.Text("_" * Us, key="_VERS_BUILD", size=Details_Size)],
-        [sg.Text("Policy", size=Checkbox_Size), sg.Text("_" * Us, key="_UI_POLICY", size=Details_Size)],
-        [sg.Text("Policy UUID", size=Checkbox_Size), sg.Text("_" * Us, key="_POLICY_UUID", size=Details_Size)],
-        [sg.Text("Policy Serial", size=Checkbox_Size), sg.Text("_" * Us, key="_POLICY_SERIAL", size=Details_Size)],
-        [sg.Text("TETRA Version", size=Checkbox_Size), sg.Text("_" * Us, key="_TETRA_VERSION", size=Details_Size)]
+        [sg.Text("Version & Build", size=Checkbox_Size), sg.Text("", key="_VERS_BUILD", size=Details_Size)],
+        [sg.Text("Policy", size=Checkbox_Size), sg.Text("", key="_UI_POLICY", size=Details_Size)],
+        [sg.Text("Policy UUID", size=Checkbox_Size), sg.Text("", key="_POLICY_UUID", size=Details_Size)],
+        [sg.Text("Policy Serial", size=Checkbox_Size), sg.Text("", key="_POLICY_SERIAL", size=Details_Size)],
+        [sg.Text("TETRA Version", size=Checkbox_Size), sg.Text("", key="_TETRA_VERSION", size=Details_Size)]
     ], title="Secure Endpoint Details")]
 ]
 logging.info("Window columns established")
@@ -258,47 +256,87 @@ version = get_version()
 window = read_xmls(version, window)
 
 
-def main(window):
+class ProcessInfo:
+
+    def __init__(self):
+        self.sfc_max_cpu = 0
+        self.sfc_cpu = 0
+        self.sfc_max_mem = 0
+        self.sfc_mem = 0
+        self.cscm_max_cpu = 0
+        self.cscm_cpu = 0
+        self.cscm_max_mem = 0
+        self.cscm_mem = 0
+        self.orbital_max_cpu = 0
+        self.orbital_cpu = 0
+        self.orbital_max_mem = 0
+        self.orbital_mem = 0
+        self.total_mem = 0
+        self.total_cpu = 0
+        self.disk_usage = 0
+        self.amp_disk_usage = 0
+        self.orbital_disk_usage = 0
+
+    def update(self, main_window):
+        main_window['_SFC_MEM'].update(f"{self.sfc_mem:.4f} %")
+        main_window['_SFC_CPU'].update(f"{self.sfc_cpu:.4f} %")
+        main_window['_SFC_MAX_CPU'].update(f"{self.sfc_max_cpu:.4f} %")
+        main_window['_SFC_MAX_MEM'].update(f"{self.sfc_max_mem:.4f} %")
+        main_window['_CSCM_MEM'].update(f"{self.cscm_mem:.4f} %")
+        main_window['_CSCM_CPU'].update(f"{self.cscm_cpu:.4f} %")
+        main_window['_CSCM_MAX_CPU'].update(f"{self.cscm_max_cpu:.4f} %")
+        main_window['_CSCM_MAX_MEM'].update(f"{self.cscm_max_mem:.4f} %")
+        main_window['_ORBITAL_MEM'].update(f"{self.orbital_mem:.4f} %")
+        main_window['_ORBITAL_CPU'].update(f"{self.orbital_cpu:.4f} %")
+        main_window['_ORBITAL_MAX_CPU'].update(f"{self.orbital_max_cpu:.4f} %")
+        main_window['_ORBITAL_MAX_MEM'].update(f"{self.orbital_max_mem:.4f} %")
+
+        main_window['_DISK'].update(f"{self.disk_usage} MB")
+        main_window['_MEM'].update(self.total_mem)
+        main_window['_CPU'].update(self.total_cpu)
+        return main_window
+
+def main(main_window):
+
     logging.info("Starting main function")
-    sfc_max_cpu, sfc_cpu, sfc_max_ram, sfc_ram, \
-        cscm_max_cpu, cscm_cpu, cscm_max_ram, cscm_ram, \
-        orbital_max_cpu, orbital_cpu, orbital_max_ram, orbital_ram, \
-        total_ram, total_cpu, started = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    event, values = window.read()
+    event, values = main_window.read()
 
     if event in (sg.WIN_CLOSED, "Exit"):
         logging.info("Window Close event received")
-        window.close()
-        del window
+        main_window.close()
+        del main_window
         exit()
 
     if event == "_START":
         logging.info("Start event received")
-        window['_START'].update(disabled=True)
-        window['_STOP'].update(disabled=False)
+        main_window['_START'].update(disabled=True)
+        main_window['_STOP'].update(disabled=False)
+        data = ProcessInfo()
+        main_window['_RUN_TEXT'].update("Running")
         started = 1
-        window['_RUN_TEXT'].update("Running")
         while True:
-            event, values = window.read(timeout=300)
+            event, values = main_window.read(timeout=300)
             if event in (sg.WIN_CLOSED, "Exit"):
                 logging.info("Window Close event received")
-                window.close()
-                del window
+                main_window.close()
+                del main_window
                 exit()
             if event == "_STOP":
                 logging.info("Stop event received")
-                window['_START'].update(disabled=False)
-                window['_STOP'].update(disabled=True)
+                main_window['_START'].update(disabled=False)
+                main_window['_STOP'].update(disabled=True)
                 started = 0
-                window['_RUN_TEXT'].update("Press Start to Continue")
-                window.read(timeout=10)
+                main_window['_RUN_TEXT'].update("Press Start to Continue")
+                main_window.read(timeout=10)
             if event == "_START":
                 logging.info("Start event received")
-                window['_START'].update(disabled=True)
-                window['_STOP'].update(disabled=False)
+                main_window['_START'].update(disabled=True)
+                main_window['_STOP'].update(disabled=False)
+                data = ProcessInfo()
+                main_window['_RUN_TEXT'].update("Running")
+                main_window = data.update(main_window)
+                main_window.read(timeout=10)
                 started = 1
-                window['_RUN_TEXT'].update("Running")
-                window.read(timeout=10)
             if started == 1:
                 logging.info("Gathering processes information")
                 processes = [proc for proc in psutil.process_iter()]
@@ -309,68 +347,49 @@ def main(window):
                     for proc in processes:
                         if proc.name() == "sfc.exe":
                             try:
-                                sfc_cpu = proc.cpu_percent()/processors
-                                if sfc_cpu > sfc_max_cpu:
-                                    sfc_max_cpu = sfc_cpu
-                                sfc_ram = proc.memory_percent()/processors
-                                if sfc_ram > sfc_max_ram:
-                                    sfc_max_ram = sfc_ram
+                                data.sfc_cpu = proc.cpu_percent()/processors
+                                if data.sfc_cpu > data.sfc_max_cpu:
+                                    data.sfc_max_cpu = data.sfc_cpu
+                                data.sfc_mem = proc.memory_percent()/processors
+                                if data.sfc_mem > data.sfc_max_mem:
+                                    data.sfc_max_mem = data.sfc_mem
                             except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
                                 logging.info(f"Exception hit:{e}")
-                                print(e)
                         elif proc.name() == "cscm.exe":
                             try:
-                                cscm_cpu = proc.cpu_percent()/processors
-                                if cscm_cpu > cscm_max_cpu:
-                                    cscm_max_cpu = cscm_cpu
-                                cscm_ram = proc.memory_percent()/processors
-                                if cscm_ram > cscm_max_ram:
-                                    cscm_max_ram = cscm_ram
+                                data.cscm_cpu = proc.cpu_percent()/processors
+                                if data.cscm_cpu > data.cscm_max_cpu:
+                                    data.cscm_max_cpu = data.cscm_cpu
+                                data.cscm_mem = proc.memory_percent()/processors
+                                if data.cscm_mem > data.cscm_max_mem:
+                                    data.cscm_max_mem = data.cscm_mem
                             except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
                                 logging.info(f"Exception hit:{e}")
-                                print(e)
                         elif proc.name() == "orbital.exe":
                             try:
-                                orbital_cpu = proc.cpu_percent()/processors
-                                if orbital_cpu > orbital_max_cpu:
-                                    orbital_max_cpu = orbital_cpu
-                                orbital_ram = proc.memory_percent()/processors
-                                if orbital_ram > orbital_max_ram:
-                                    orbital_max_ram = orbital_ram
+                                data.orbital_cpu = proc.cpu_percent()/processors
+                                if data.orbital_cpu > data.orbital_max_cpu:
+                                    data.orbital_max_cpu = data.orbital_cpu
+                                data.orbital_mem = proc.memory_percent()/processors
+                                if data.orbital_mem > data.orbital_max_mem:
+                                    data.orbital_max_mem = data.orbital_mem
                             except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
                                 logging.info(f"Exception hit:{e}")
-                                print(e)
                 except Exception as e:
                     logging.info(e)
                 logging.info("Calculating total MEM and total CPU usage")
-                total_ram = sfc_ram + cscm_ram + orbital_ram
-                total_cpu = sfc_cpu + sfc_ram + orbital_ram
-                disk_usage = "0 MB"
+                data.total_mem = data.sfc_mem + data.cscm_mem + data.orbital_mem
+                data.total_cpu = data.sfc_cpu + data.cscm_cpu + data.orbital_cpu
                 try:
                     logging.info("Calculating AMP disk usage")
-                    amp_disk_usage = sum(f.stat().st_size for f in amp_root_directory.glob('**/*') if f.is_file())
-                    orbital_disk_usage = sum(f.stat().st_size for f in orbital_root_directory.glob('**/*') if f.is_file())
-                    disk_usage = f"{(amp_disk_usage + orbital_disk_usage) / (2**20):.3f} MB"
+                    data.amp_disk_usage = sum(f.stat().st_size for f in amp_root_directory.glob('**/*') if f.is_file())
+                    data.orbital_disk_usage = sum(f.stat().st_size
+                                             for f in orbital_root_directory.glob('**/*') if f.is_file())
+                    data.disk_usage = f"{(data.amp_disk_usage + data.orbital_disk_usage) / (2**20):.3f}"
                 except (PermissionError, FileNotFoundError) as e:
                     logging.info(f"Exception hit:{e}")
-                    print(e)
                 logging.info("Updating window information with MEM and CPU information")
-                window['_SFC_MEM'].update(f"{sfc_ram:.4f} %")
-                window['_SFC_CPU'].update(f"{sfc_cpu:.4f} %")
-                window['_SFC_MAX_CPU'].update(f"{sfc_max_cpu:.4f} %")
-                window['_SFC_MAX_MEM'].update(f"{sfc_max_ram:.4f} %")
-                window['_CSCM_MEM'].update(f"{cscm_ram:.4f} %")
-                window['_CSCM_CPU'].update(f"{cscm_cpu:.4f} %")
-                window['_CSCM_MAX_CPU'].update(f"{cscm_max_cpu:.4f} %")
-                window['_CSCM_MAX_MEM'].update(f"{cscm_max_ram:.4f} %")
-                window['_ORBITAL_MEM'].update(f"{orbital_ram:.4f} %")
-                window['_ORBITAL_CPU'].update(f"{orbital_cpu:.4f} %")
-                window['_ORBITAL_MAX_CPU'].update(f"{orbital_max_cpu:.4f} %")
-                window['_ORBITAL_MAX_MEM'].update(f"{orbital_max_ram:.4f} %")
-
-                window['_DISK'].update(disk_usage)
-                window['_MEM'].update(total_ram)
-                window['_CPU'].update(total_cpu)
+                main_window = data.update(main_window)
 
 
 main(window)
