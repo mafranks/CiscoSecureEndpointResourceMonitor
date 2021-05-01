@@ -19,16 +19,20 @@ logging.basicConfig(
 )
 logging.info(f"AMP Resource Montior is {logging.getLevelName(logging.getLogger().level)}")
 
-WINDOW_SIZE = (1000, 760)
+WINDOW_SIZE = (940, 780)
 BUTTON_SIZE = (15, 1)
 BUTTON_COLOR = ("Black", "Light Gray")
+TRUE_BC = ("Black", "Green")
+FALSE_BC = ("Black", "Red")
 BAR_SIZE = (20, 20)
 BAR_MAX = 100
 DRC_Size = (5, 1)
 Info_Txt_Size = (15, 1)
-Checkbox_Size = (15, 1)
-Proc_Info_Size = (60, 1)
-Us = 60
+Checkbox_Size = (17, 1)
+Proc_Info_Size = (10, 1)
+Path_Size = (50, 1)
+Details_Size = (92, 1)
+Us = 20
 path = r"C:/Program Files/Cisco/AMP"
 sg.theme('SystemDefault')
 max_disk = psutil.disk_usage("C:/").total // (2 ** 30)
@@ -103,9 +107,9 @@ def read_xmls(version, window):
             orbital_6_5_1_to_7_1_1 = dig_thru_xml("Object", "config", "orbital", "enable", root=root)
             orbital_7_1_1_to_7_1_5 = dig_thru_xml("Object", "config", "orbital", "enable_msi", root=root)
             orbital_7_1_5_plus = dig_thru_xml("Object", "config", "orbital", "enablemsi", root=root)
-            orbital = 0
+            orbital = '0'
             if "1" in (orbital_6_5_1_to_7_1_1, orbital_7_1_1_to_7_1_5, orbital_7_1_5_plus):
-                orbital = 1
+                orbital = '1'
             logging.info("Closing policy.xml")
 
         with open(f"{path}/{version}/global.xml") as infile:
@@ -124,16 +128,24 @@ def read_xmls(version, window):
 
         logging.info("Updating window elements with values from XMLs")
         if exprev_options in ("0x0000012B", "0x0000033B"):
-            window["_SCRIPT_CONTROL"].update(True)
-        window["_FILE_SCAN"].update(True)
-        window["_NETWORK_SCAN"].update(network)
-        window["_MAP"].update(MAP)
-        window["_SCRIPT_PROTECTION"].update(script_protection)
-        window["_SPP"].update(spp)
-        window["_EXPLOIT_PREVENTION"].update(exprev_enable)
-        window["_BEHAVIORAL_PROTECTION"].update(behavioral_protection)
-        window["_TETRA"].update(tetra)
-        window["_ORBITAL"].update(orbital)
+            window["_SCRIPT_CONTROL"].update(button_color=TRUE_BC)
+        window["_FILE_SCAN"].update(button_color=TRUE_BC)
+        if network == '1':
+            window["_NETWORK_SCAN"].update(button_color=TRUE_BC)
+        if MAP == '1':
+            window["_MAP"].update(button_color=TRUE_BC)
+        if script_protection == '1':
+            window["_SCRIPT_PROTECTION"].update(button_color=TRUE_BC)
+        if spp == '1':
+            window["_SPP"].update(button_color=TRUE_BC)
+        if exprev_enable == '1':
+            window["_EXPLOIT_PREVENTION"].update(button_color=TRUE_BC)
+        if behavioral_protection == '1':
+            window["_BEHAVIORAL_PROTECTION"].update(button_color=TRUE_BC)
+        if tetra == '1':
+            window["_TETRA"].update(button_color=TRUE_BC)
+        if orbital == '1':
+            window["_ORBITAL"].update(button_color=TRUE_BC)
 
         window["_SFC_PATH"].update(f"{path}/{version}/sfc.exe")
         window["_CSCM_PATH"].update(f"{path}/{version}/cscm.exe")
@@ -151,6 +163,7 @@ def read_xmls(version, window):
         logging.info(f"Exception hit:{e}")
         exit(e)
 
+
 logging.info("Establishing window columns' layout")
 left_col = [
     [sg.Frame(layout=[
@@ -158,20 +171,26 @@ left_col = [
         [sg.Button("Start", size=BUTTON_SIZE, button_color=BUTTON_COLOR, key="_START"),
          sg.Button("Stop", size=BUTTON_SIZE, button_color=BUTTON_COLOR, disabled=True, key="_STOP")],
         [sg.Text("")],
-        [sg.Text("Engines Enabled")],
-        [sg.Checkbox("File Scan", size=Checkbox_Size, key="_FILE_SCAN"),
-         sg.Checkbox("Network Scan", key="_NETWORK_SCAN")],
-        [sg.Checkbox("MAP", size=Checkbox_Size, key="_MAP", tooltip="Malicious Activity Protection"),
-         sg.Checkbox("Script Protection", key="_SCRIPT_PROTECTION")],
-        [sg.Checkbox("SPP", size=Checkbox_Size, key="_SPP", tooltip="System Process Protection"),
-         sg.Checkbox("Exploit Prevention", key="_EXPLOIT_PREVENTION")],
-        [sg.Checkbox("Script Control", size=Checkbox_Size, key="_SCRIPT_CONTROL"),
-         sg.Checkbox("Behavioral Protection", key="_BEHAVIORAL_PROTECTION")],
-        [sg.Checkbox("TETRA", key="_TETRA", size=Checkbox_Size),
-         sg.Checkbox("Orbital", key="_ORBITAL")],
+        [sg.Text("Engines Enabled"), sg.Button(button_color=('black', 'green'), size=(3, 1)),
+         sg.Text("Engines Disabled"), sg.Button(button_color=FALSE_BC, size=(3, 1))],
+        [sg.Text("")],
+        [sg.Button(button_text="File Scan", size=Checkbox_Size, key="_FILE_SCAN", button_color=FALSE_BC),
+         sg.Button(button_text="Network Scan", key="_NETWORK_SCAN", size=Checkbox_Size, button_color=FALSE_BC)],
+        [sg.Button("MAP", size=Checkbox_Size, key="_MAP", tooltip="Malicious Activity Protection",
+                   button_color=FALSE_BC),
+         sg.Button(button_text="Script Protection", key="_SCRIPT_PROTECTION", size=Checkbox_Size,
+                   button_color=FALSE_BC)],
+        [sg.Button(button_text="SPP", size=Checkbox_Size, key="_SPP", tooltip="System Process Protection"),
+         sg.Button(button_text="Exploit Prevention", key="_EXPLOIT_PREVENTION", size=Checkbox_Size,
+                   button_color=FALSE_BC)],
+        [sg.Button(button_text="Script Control", size=Checkbox_Size, key="_SCRIPT_CONTROL", button_color=FALSE_BC),
+         sg.Button(button_text="Behavioral Protection", key="_BEHAVIORAL_PROTECTION", size=Checkbox_Size,
+                   button_color=FALSE_BC)],
+        [sg.Button(button_text="TETRA", key="_TETRA", size=Checkbox_Size, button_color=FALSE_BC),
+         sg.Button(button_text="Orbital", key="_ORBITAL", size=Checkbox_Size, button_color=FALSE_BC)],
         [sg.Text("")],
         [sg.Frame(layout=[
-            [sg.Text("RAM", size=DRC_Size), sg.ProgressBar(BAR_MAX, orientation="h", size=BAR_SIZE, key="_RAM")],
+            [sg.Text("MEM", size=DRC_Size), sg.ProgressBar(BAR_MAX, orientation="h", size=BAR_SIZE, key="_MEM")],
             [sg.Text("CPU", size=DRC_Size), sg.ProgressBar(BAR_MAX, orientation="h", size=BAR_SIZE, key="_CPU")],
             [sg.Text("DISK", size=DRC_Size), sg.Text("0 MB", size=(30, 1), key="_DISK")]
         ], title="Secure Endpoint Total Resources Used")],
@@ -179,41 +198,65 @@ left_col = [
 
 right_col = [
     [sg.Frame(layout=[
-        [sg.Text("Process", size=Info_Txt_Size), sg.Text("_" * Us, key="_SFC_PATH", size=Proc_Info_Size)],
-        [sg.Text("RAM Usage", size=Info_Txt_Size), sg.Text("_" * Us, key="_SFC_RAM", size=Proc_Info_Size)],
-        [sg.Text("RAM Usage Max", size=Info_Txt_Size), sg.Text("_" * Us, key="_SFC_MAX_RAM", size=Proc_Info_Size)],
-        [sg.Text("CPU Usage", size=Info_Txt_Size), sg.Text("_" * Us, key="_SFC_CPU", size=Proc_Info_Size)],
-        [sg.Text("CPU Usage Max", size=Info_Txt_Size), sg.Text("_" * Us, key="_SFC_MAX_CPU", size=Proc_Info_Size)],
-        [sg.Text("Process", size=Info_Txt_Size), sg.Text("_" * Us, key="_CSCM_PATH", size=Proc_Info_Size)],
-        [sg.Text("RAM Usage", size=Info_Txt_Size), sg.Text("_" * Us, key="_CSCM_RAM", size=Proc_Info_Size)],
-        [sg.Text("RAM Usage Max", size=Info_Txt_Size), sg.Text("_" * Us, key="_CSCM_MAX_RAM", size=Proc_Info_Size)],
-        [sg.Text("CPU Usage", size=Info_Txt_Size), sg.Text("_" * Us, key="_CSCM_CPU", size=Proc_Info_Size)],
-        [sg.Text("CPU Usage Max", size=Info_Txt_Size), sg.Text("_" * Us, key="_CSCM_MAX_CPU", size=Proc_Info_Size)],
-        [sg.Text("Process", size=Info_Txt_Size), sg.Text("_" * Us, key="_ORBITAL_PATH", size=Proc_Info_Size)],
-        [sg.Text("RAM Usage", size=Info_Txt_Size), sg.Text("_" * Us, key="_ORBITAL_RAM", size=Proc_Info_Size)],
-        [sg.Text("RAM Usage Max", size=Info_Txt_Size), sg.Text("_" * Us, key="_ORBITAL_MAX_RAM", size=Proc_Info_Size)],
-        [sg.Text("CPU Usage", size=Info_Txt_Size), sg.Text("_" * Us, key="_ORBITAL_CPU", size=Proc_Info_Size)],
-        [sg.Text("CPU Usage Max", size=Info_Txt_Size), sg.Text("_" * Us, key="_ORBITAL_MAX_CPU", size=Proc_Info_Size)],
+        [sg.Text("Process", size=Info_Txt_Size), sg.Text("_" * Us, key="_SFC_PATH", size=Path_Size)],
+        [sg.Text("MEM Usage", size=Info_Txt_Size),
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_MEM", size=Proc_Info_Size),
+         sg.Text("MEM: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_MEM_ACT", size=Proc_Info_Size)],
+        [sg.Text("MEM Usage Max", size=Info_Txt_Size),
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_MAX_MEM", size=Proc_Info_Size),
+         sg.Text("MEM: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_MAX_MEM_ACT", size=Proc_Info_Size)],
+        [sg.Text("CPU Usage", size=Info_Txt_Size),
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_CPU", size=Proc_Info_Size),
+         sg.Text("CPU: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_CPU_ACT", size=Proc_Info_Size)],
+        [sg.Text("CPU Usage Max", size=Info_Txt_Size),
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_MAX_CPU", size=Proc_Info_Size),
+         sg.Text("CPU: ", size=DRC_Size), sg.Text("_" * Us, key="_SFC_MAX_CPU_ACT", size=Proc_Info_Size)],
+        [sg.Text("")],
+        [sg.Text("Process", size=Info_Txt_Size), sg.Text("_" * Us, key="_CSCM_PATH", size=Path_Size)],
+        [sg.Text("MEM Usage", size=Info_Txt_Size),
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_MEM", size=Proc_Info_Size),
+         sg.Text("MEM: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_MEM_ACT", size=Proc_Info_Size)],
+        [sg.Text("MEM Usage Max", size=Info_Txt_Size),
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_MAX_MEM", size=Proc_Info_Size),
+         sg.Text("MEM: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_MAX_MEM_ACT", size=Proc_Info_Size)],
+        [sg.Text("CPU Usage", size=Info_Txt_Size),
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_CPU", size=Proc_Info_Size),
+         sg.Text("CPU: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_CPU_ACT", size=Proc_Info_Size)],
+        [sg.Text("CPU Usage Max", size=Info_Txt_Size),
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_MAX_CPU", size=Proc_Info_Size),
+         sg.Text("CPU: ", size=DRC_Size), sg.Text("_" * Us, key="_CSCM_MAX_CPU_ACT", size=Proc_Info_Size)],
+        [sg.Text("")],
+        [sg.Text("Process", size=Info_Txt_Size), sg.Text("_" * Us, key="_ORBITAL_PATH", size=Path_Size)],
+        [sg.Text("MEM Usage", size=Info_Txt_Size),
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_MEM", size=Proc_Info_Size),
+         sg.Text("MEM: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_MEM_ACT", size=Proc_Info_Size)],
+        [sg.Text("MEM Usage Max", size=Info_Txt_Size),
+         sg.Text("MEM%: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_MAX_MEM", size=Proc_Info_Size),
+         sg.Text("MEM: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_MAX_MEM_ACT", size=Proc_Info_Size)],
+        [sg.Text("CPU Usage", size=Info_Txt_Size),
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_CPU", size=Proc_Info_Size),
+         sg.Text("CPU: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_CPU_ACT", size=Proc_Info_Size)],
+        [sg.Text("CPU Usage Max", size=Info_Txt_Size),
+         sg.Text("CPU%: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_MAX_CPU", size=Proc_Info_Size),
+         sg.Text("CPU: ", size=DRC_Size), sg.Text("_" * Us, key="_ORBITAL_MAX_CPU_ACT", size=Proc_Info_Size)],
     ], title="Processes")],
 ]
 
 layout = [
     [sg.Text("CISCO SECURE ENDPOINT RESOURCE MONITOR", text_color="black", justification="center",
              relief=sg.RELIEF_RIDGE, size=(51, 1), background_color="light blue", font=("Helvetica", 25))],
-    [sg.Text("")],
     [sg.Text("Press Start to Begin", size=(88, 1), justification="center", font=("Helvetica", 15),
              border_width=1, relief=sg.RELIEF_RIDGE, background_color="white", text_color="black", key="_RUN_TEXT")],
     [sg.HSeparator()],
-    [sg.Text("")],
     [sg.Column(left_col, element_justification='c'), sg.Column(right_col, element_justification='c')],
     [sg.HSeparator()],
     [sg.Text("")],
     [sg.Frame(layout=[
-        [sg.Text("Version & Build", size=Checkbox_Size), sg.Text("_" * Us, key="_VERS_BUILD")],
-        [sg.Text("Policy", size=Info_Txt_Size), sg.Text("_" * Us, key="_UI_POLICY", size=Proc_Info_Size)],
-        [sg.Text("Policy UUID", size=Checkbox_Size), sg.Text("_" * Us, key="_POLICY_UUID")],
-        [sg.Text("Policy Serial", size=Checkbox_Size), sg.Text("_" * Us, key="_POLICY_SERIAL")],
-        [sg.Text("TETRA Version", size=Checkbox_Size), sg.Text("_" * Us, key="_TETRA_VERSION")]
+        [sg.Text("Version & Build", size=Checkbox_Size), sg.Text("_" * Us, key="_VERS_BUILD", size=Details_Size)],
+        [sg.Text("Policy", size=Checkbox_Size), sg.Text("_" * Us, key="_UI_POLICY", size=Details_Size)],
+        [sg.Text("Policy UUID", size=Checkbox_Size), sg.Text("_" * Us, key="_POLICY_UUID", size=Details_Size)],
+        [sg.Text("Policy Serial", size=Checkbox_Size), sg.Text("_" * Us, key="_POLICY_SERIAL", size=Details_Size)],
+        [sg.Text("TETRA Version", size=Checkbox_Size), sg.Text("_" * Us, key="_TETRA_VERSION", size=Details_Size)]
     ], title="Secure Endpoint Details")]
 ]
 logging.info("Window columns established")
@@ -274,41 +317,44 @@ def main(window):
                 logging.info("Gathering processors information")
                 processors = psutil.cpu_count()
                 logging.info("Pull sfc, cscm and orbital information from processes")
-                for proc in processes:
-                    if proc.name() == "sfc.exe":
-                        try:
-                            sfc_cpu = proc.cpu_percent()/processors
-                            if sfc_cpu > sfc_max_cpu:
-                                sfc_max_cpu = sfc_cpu
-                            sfc_ram = proc.memory_percent()/processors
-                            if sfc_ram > sfc_max_ram:
-                                sfc_max_ram = sfc_ram
-                        except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
-                            logging.info(f"Exception hit:{e}")
-                            print(e)
-                    elif proc.name() == "cscm.exe":
-                        try:
-                            cscm_cpu = proc.cpu_percent()/processors
-                            if cscm_cpu > cscm_max_cpu:
-                                cscm_max_cpu = cscm_cpu
-                            cscm_ram = proc.memory_percent()/processors
-                            if cscm_ram > cscm_max_ram:
-                                cscm_max_ram = cscm_ram
-                        except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
-                            logging.info(f"Exception hit:{e}")
-                            print(e)
-                    elif proc.name() == "orbital.exe":
-                        try:
-                            orbital_cpu = proc.cpu_percent()/processors
-                            if orbital_cpu > orbital_max_cpu:
-                                orbital_max_cpu = orbital_cpu
-                            orbital_ram = proc.memory_percent()/processors
-                            if orbital_ram > orbital_max_ram:
-                                orbital_max_ram = orbital_ram
-                        except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
-                            logging.info(f"Exception hit:{e}")
-                            print(e)
-                logging.info("Calculating total RAM and total CPU usage")
+                try:
+                    for proc in processes:
+                        if proc.name() == "sfc.exe":
+                            try:
+                                sfc_cpu = proc.cpu_percent()/processors
+                                if sfc_cpu > sfc_max_cpu:
+                                    sfc_max_cpu = sfc_cpu
+                                sfc_ram = proc.memory_percent()/processors
+                                if sfc_ram > sfc_max_ram:
+                                    sfc_max_ram = sfc_ram
+                            except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
+                                logging.info(f"Exception hit:{e}")
+                                print(e)
+                        elif proc.name() == "cscm.exe":
+                            try:
+                                cscm_cpu = proc.cpu_percent()/processors
+                                if cscm_cpu > cscm_max_cpu:
+                                    cscm_max_cpu = cscm_cpu
+                                cscm_ram = proc.memory_percent()/processors
+                                if cscm_ram > cscm_max_ram:
+                                    cscm_max_ram = cscm_ram
+                            except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
+                                logging.info(f"Exception hit:{e}")
+                                print(e)
+                        elif proc.name() == "orbital.exe":
+                            try:
+                                orbital_cpu = proc.cpu_percent()/processors
+                                if orbital_cpu > orbital_max_cpu:
+                                    orbital_max_cpu = orbital_cpu
+                                orbital_ram = proc.memory_percent()/processors
+                                if orbital_ram > orbital_max_ram:
+                                    orbital_max_ram = orbital_ram
+                            except (ProcessLookupError, AttributeError, psutil.NoSuchProcess) as e:
+                                logging.info(f"Exception hit:{e}")
+                                print(e)
+                except Exception as e:
+                    logging.info(e)
+                logging.info("Calculating total MEM and total CPU usage")
                 total_ram = sfc_ram + cscm_ram + orbital_ram
                 total_cpu = sfc_cpu + sfc_ram + orbital_ram
                 disk_usage = "0 MB"
@@ -320,22 +366,22 @@ def main(window):
                 except (PermissionError, FileNotFoundError) as e:
                     logging.info(f"Exception hit:{e}")
                     print(e)
-                logging.info("Updating window information with RAM and CPU information")
-                window['_SFC_RAM'].update(f"{sfc_ram:.4f} %")
+                logging.info("Updating window information with MEM and CPU information")
+                window['_SFC_MEM'].update(f"{sfc_ram:.4f} %")
                 window['_SFC_CPU'].update(f"{sfc_cpu:.4f} %")
                 window['_SFC_MAX_CPU'].update(f"{sfc_max_cpu:.4f} %")
-                window['_SFC_MAX_RAM'].update(f"{sfc_max_ram:.4f} %")
-                window['_CSCM_RAM'].update(f"{cscm_ram:.4f} %")
+                window['_SFC_MAX_MEM'].update(f"{sfc_max_ram:.4f} %")
+                window['_CSCM_MEM'].update(f"{cscm_ram:.4f} %")
                 window['_CSCM_CPU'].update(f"{cscm_cpu:.4f} %")
                 window['_CSCM_MAX_CPU'].update(f"{cscm_max_cpu:.4f} %")
-                window['_CSCM_MAX_RAM'].update(f"{cscm_max_ram:.4f} %")
-                window['_ORBITAL_RAM'].update(f"{orbital_ram:.4f} %")
+                window['_CSCM_MAX_MEM'].update(f"{cscm_max_ram:.4f} %")
+                window['_ORBITAL_MEM'].update(f"{orbital_ram:.4f} %")
                 window['_ORBITAL_CPU'].update(f"{orbital_cpu:.4f} %")
                 window['_ORBITAL_MAX_CPU'].update(f"{orbital_max_cpu:.4f} %")
-                window['_ORBITAL_MAX_RAM'].update(f"{orbital_max_ram:.4f} %")
+                window['_ORBITAL_MAX_MEM'].update(f"{orbital_max_ram:.4f} %")
 
                 window['_DISK'].update(disk_usage)
-                window['_RAM'].update(total_ram)
+                window['_MEM'].update(total_ram)
                 window['_CPU'].update(total_cpu)
 
 
